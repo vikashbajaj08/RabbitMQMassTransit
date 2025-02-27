@@ -10,10 +10,18 @@ builder.Services.AddMassTransit(x =>
     {
         config.Host(builder.Configuration.GetValue<string>("RabbitMQHost"));
 
-        config.ReceiveEndpoint("order-placed", e =>
+        config.ReceiveEndpoint("shipping-order-queue", e =>
         {
             e.Consumer<OrderPlacedConsumer>();
+            e.Bind("order-exchange", x =>
+            {
+                x.RoutingKey = "order.created";
+                x.ExchangeType = "direct";
+            });
+            //Fanout example
+            //e.Bind("order-exchage", x => { x.ExchangeType = "fanout";});
         });
+        
     });
 
     

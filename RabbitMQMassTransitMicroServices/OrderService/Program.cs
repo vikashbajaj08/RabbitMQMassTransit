@@ -9,7 +9,16 @@ builder.Services.AddMassTransit((x) =>
 {
     x.UsingRabbitMq((context, config) =>
     {
+        //Setup host
         config.Host(builder.Configuration.GetValue<string>("RabbitMQHost"));
+
+        //Setup dirct exchange
+        config.Message<OrderPlaced>(x => x.SetEntityName("order-exchange"));
+        config.Publish<OrderPlaced>(x =>{x.ExchangeType = "direct";});
+
+        //Setup Fanout exchange
+        //config.Message<OrderPlaced>(x => x.SetEntityName("order-exchange"));
+        //config.Publish<OrderPlaced>(x => { x.ExchangeType = "fanout"; });
     });
 });
 
@@ -28,9 +37,21 @@ app.MapPost("/orders", async (OrderRequest order, IBus bus) =>
         Quantity = order.Quantity
     };
 
-    await bus.Publish(orderMessage);
+    try
+    {
+        await bus.Publish(orderMessage, context =>{context.SetRoutingKey("order.created");});
 
-    return Results.Created($"/orders/{order.OrderId}", orderMessage);
+        ////Fanout example
+        //await bus.Publish(orderMessage);
+
+        return Results.Created($"/orders/{order.OrderId}", orderMessage);
+    }
+    catch (Exception ex)
+    {
+        // Log the exception and handle it appropriately
+        Console.WriteLine($"Error publishing message: {ex.Message}");
+        return Results.StatusCode(500); // Return an appropriate HTTP status code
+    }    
 });
 
 // Configure the HTTP request pipeline.
