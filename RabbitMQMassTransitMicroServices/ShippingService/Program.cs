@@ -18,8 +18,27 @@ builder.Services.AddMassTransit(x =>
                 x.RoutingKey = "order.created";
                 x.ExchangeType = "direct";
             });
-            //Fanout example
+            //Fanout example (Ignore Routing Key)
             //e.Bind("order-exchage", x => { x.ExchangeType = "fanout";});
+
+            //Hearder Exchange example
+            //e.Bind("order-exchange", x =>
+            //{
+            //    x.ExchangeType = "headers";
+            //    x.SetBindingArgument("Product", "Laptop");
+            //    x.SetBindingArgument("ProductType", "Electronics");
+            //    x.SetBindingArgument("x-match", "all");
+
+            //});
+
+            //Topics Example
+
+            //e.Consumer<OrderPlacedConsumer>();
+            //e.Bind("order-exchange", x =>
+            //{
+            //    x.RoutingKey = "order.*"; //* match exactly one word and # match zero or more words
+            //    x.ExchangeType = "topic";
+            //});
         });
         
     });

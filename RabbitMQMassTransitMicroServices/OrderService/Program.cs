@@ -19,6 +19,16 @@ builder.Services.AddMassTransit((x) =>
         //Setup Fanout exchange
         //config.Message<OrderPlaced>(x => x.SetEntityName("order-exchange"));
         //config.Publish<OrderPlaced>(x => { x.ExchangeType = "fanout"; });
+
+        //Setup Topic exchange
+        //config.Message<OrderPlaced>(x => x.SetEntityName("order-exchange"));
+        //config.Publish<OrderPlaced>(x => { x.ExchangeType = "topic"; });
+
+        //Setup Headers exchange
+        //config.Message<OrderPlaced>(x => x.SetEntityName("order-exchange"));
+        //config.Publish<OrderPlaced>(x => { x.ExchangeType = "headers"; });
+
+
     });
 });
 
@@ -41,7 +51,14 @@ app.MapPost("/orders", async (OrderRequest order, IBus bus) =>
     {
         await bus.Publish(orderMessage, context =>{context.SetRoutingKey("order.created");});
 
-        ////Fanout example
+        //Topic example
+        //var routingKey = order.Quantity > 10 ? "order.created" : "order.created.Plus";
+        //await bus.Publish(orderMessage, context => { context.SetRoutingKey(routingKey);  });
+
+        //Headers example
+        //await bus.Publish(orderMessage, context => { context.Headers.Set("product", "Laptop"); context.Headers.Set("type", "electronics"); });
+
+        //Fanout example
         //await bus.Publish(orderMessage);
 
         return Results.Created($"/orders/{order.OrderId}", orderMessage);
