@@ -18,6 +18,23 @@ builder.Services.AddMassTransit(x =>
                 x.RoutingKey = "order.created";
                 x.ExchangeType = "direct";
             });
+            //Retry
+            e.UseMessageRetry(r=>r.Interval(3,TimeSpan.FromSeconds(5)));
+
+            //e.UseMessageRetry(r => r.Exponential(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(5)));
+
+            //Circuit Breaker
+
+            e.UseKillSwitch(options =>
+            {
+                //10 continious failure
+                options.SetActivationThreshold(10)
+                // or 15% failure
+                .SetTripThreshold(0.15)
+                //restart
+                .SetRestartTimeout(TimeSpan.FromMinutes(1));
+            });
+
             //Fanout example (Ignore Routing Key)
             //e.Bind("order-exchage", x => { x.ExchangeType = "fanout";});
 
